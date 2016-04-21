@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" type="text/css" href="../lib/public/css/default.css">
+	<link rel="stylesheet" type="text/css" href="../lib/reset.css">
+	<style type="text/css">
+		body,html{
+			padding: 0;
+			margin: 0;
+			font-family: 'Microsoft Yahei';
+		}
+		.content{
+			width:1000px;
+			height:2000px;
+			border: 1px solid red;
+			margin: 0 auto;
+		}
+		.form-content dt,.form-content dd{
+			display: inline-block;
+			height: 45px;
+		}
+		.form-content dt{
+			width: 116px;
+			text-align: right;
+			margin-right: 15px;
+		}
+		.form-content dd{
+			width: 190px;
+		}
+		.form-content dd>input,.form-content dd>select{
+			width: 188px;
+			height: 30px;
+			border: 1px solid #999;
+			padding: 0;
+			outline: none;
+			font-family: 'Microsoft Yahei';
+			font-size: 14px;
+			border-radius: 2px;
+		}
+		.form-title{
+			height: 50px;
+			line-height: 50px;
+			text-indent: 28px;
+			color: green;
+		}
+		.div-btn{
+			display: inline-block;
+			text-align: center;
+			color: #fff;
+			cursor:pointer;
+			width: 100px;
+			height: 40px;
+			line-height: 40px;
+			font-size: 16px;
+			border-radius: 3px;
+			margin-top: 10px;
+		}
+		.cancel-btn{
+			background: #ccc;
+			margin-left: 230px;
+		}
+		.cancel-btn:hover{
+			background: #A7A7A7;
+		}
+		.okbtn{
+			background: #38A800;
+			margin-left: 40px;
+		}
+		.okbtn:hover{
+			background: #239B1F;
+		}
+		.form-content .input-nomarginright{
+			border-right-width: 0;
+			width: 150px;
+			float: left;
+			border-top-right-radius: 0px;
+			border-bottom-right-radius: 0px;
+		}
+		.form-content .unit{
+			display: inline-block;
+			width: 38px;
+			height: 30px;
+			line-height: 30px;
+			border: 1px solid #999;
+			text-align: center;
+			border-left-width: 0;
+			border-top-right-radius: 2px;
+			border-bottom-right-radius: 2px;
+		}
+		#endTime,#startTime{
+			height: 30px;
+			width: 188px;
+			border-radius: 2px;
+			border: 1px solid #999;
+		}
+
+	</style>
+	<script src="../lib/jquery-1.9.1.min.js"></script>
+	<script src="../lib/public/javascript/zebra_datepicker.js"></script>
+
+	<script src="../jslib/gClass.js"></script>
+    <script src="../jslib/gConfig.js"></script>
+    <script src="../jslib/gMap.js"></script>
+    <script src="../jslib/gEdit.js"></script>
+    <script src="../jslib/gGraph.js"></script>
+    <script src="../jslib/gDrawFeature.js"></script>
+    <script src="../jslib/gControl.js"></script>
+    <script src="../jslib/gLayer.js"></script>
+    <script src="../jslib/gUtil.js"></script>
+    <script src="../jslib/gStyle.js"></script>
+    <script src="../jslib/gGeometry.js"></script>
+    <script src="../jslib/gFeature.js"></script>
+    <script src="../jslib/gMarker.js"></script>
+    <script src="../jslib/gWebFeature.js"></script>
+    <script src="../jslib/gWebSQL.js"></script>
+</head>
+<body>
+	<div class="content"></div>
+	<button id="createbtn">创建</button>
+	<script type="text/javascript">
+	//遮罩层组件
+	;(function ($){
+
+		var default_option = {
+			dialogWidth: 700,
+			dialogHeight: 400,
+			template: '<div></div>'
+		};
+
+		var maskDiv = function (options){
+
+			var _opts = $.extend({}, default_option, options);
+
+			this.dialogWidth = _opts.dialogWidth;
+			this.dialogHeight = _opts.dialogHeight;
+
+			this.template = _opts.template;
+
+			this.init();
+		};	
+
+		maskDiv.prototype.init = function (){
+			var self = this;
+			var scrollHeight = $(document).height(),//获取文档流的高度
+				scrollWidth = $(document).width();
+
+			var clientHeight = $(window).height(),//获取视窗范围的高度
+				clientWidth = $(window).width();
+		
+			var maskDom = $('<div id="maskDiv"></div>').css({
+				'position': 'absolute',
+				'left': '0',
+				'top': '0',
+				'width': scrollWidth+'px',
+				'height':  scrollHeight+'px',
+				'background': '#000',
+				'opacity': '0.75',
+				'filter': 'alpha(opacity=75)',
+				'z-index': '1000'
+			});
+			$('body').append(maskDom);
+
+			var dialogdiv = $('<div id="dialogdiv"></div>').css({
+				'position': 'fixed',
+				'width': self.dialogWidth + 'px',
+				'height': self.dialogHeight + 'px',
+				'left': (clientWidth - self.dialogWidth)/2 + 'px',
+				'top': (clientHeight - self.dialogHeight)/2 + 'px',
+				'z-index': '1001',
+				'background': '#fff'
+			});
+			dialogdiv.html(self.template);
+			$('body').append(dialogdiv);
+
+			this.bindEvent();
+		};
+
+		maskDiv.prototype.close = function (){
+			$('#maskDiv').remove();
+			$('#dialogdiv').remove();
+		};
+
+		maskDiv.prototype.bindEvent = function (){
+			var self = this;
+			$('#maskDiv').click(function (){
+				self.close();
+			});
+		};
+
+		window.maskDiv = maskDiv;
+
+	})(jQuery);
+	
+/**
+ * [createSecurity description]
+ * @param  {[type]} employeeID [员工id号]
+ * @param  {[type]} dbName     [数据库名称]
+ * @param  {[type]} tableName  [数据库表名称]
+ * @return {[type]}            [description]
+ */
+	function createSecurity(employeeID , dbName, tableName) {
+		this.cacheObj = {
+			'secuID'       : '.form-content .secuID',
+			'policyholder' : '.form-content .policyholder',
+			'cardClass'    : '.form-content .cardClass',
+			'cardID'       : '.form-content .cardID',
+			'benefitPerson': '.form-content .benefitPerson',
+			'phoneNum'     : '.form-content .phoneNum',
+			'address'      : '.form-content .address',
+			'securityClass': '.form-content .securityClass',
+			'totalArea'    : '.form-content .totalArea',
+			'startTime'    : '#startTime',
+			'endTime'      : '#endTime',
+
+			'cancel_btn'   : '#j-cancelcreate',
+			'confirm_btn'  : '#j-create',
+			'create_btn'   : '#createbtn',
+
+			'maskObj'      : null,
+
+			'employeeID'   : employeeID,
+//设置dom中获取值与数据库表中的字段对应关系用来添加和删除，键名是数据库中对应的字段名，键值对应dom中的取值,在setMappingVal函数中设置
+			'dbTableField' : {},
+			'dbName'       : dbName,
+			'tableName'    : tableName
+		};
+
+		this.init();
+	}
+
+	createSecurity.prototype = {
+		init: function (){
+			this.bindCreateBtn();
+		},
+
+		create: function (){
+			this.initMask();
+			this.setSecurityID();
+			this.setMappingVal();
+			this.bindEvent();
+		},
+
+		bindCreateBtn: function (){
+			var self = this;
+			$(this.cacheObj.create_btn).click(function (){
+				self.create();
+			});
+		},
+
+		//初始化弹窗
+		initMask: function (){
+			var t = this.setMaskContentModel();
+			this.cacheObj.maskObj = new maskDiv({
+				template: t,
+				dialogWidth: 700,
+				dialogHeight: 400
+			});
+		},
+		//设置弹窗中form表单的内容区
+		setMaskContentModel: function(){
+			var template = '<div class="securityfrom">'
+						+'<div class="form-title">'
+						+	'创建承保'
+						+'</div>'
+						+'<div class="form-content">'
+						+	'<dl>'
+						+		'<dt>任务编号:</dt>'
+						+		'<dd><input type="text" disabled class="secuID"/></dd>'
+						+		'<dt>投保人:</dt>'
+						+		'<dd><input type="text" class="policyholder"/></dd>'
+						+		'<dt>证件类型:</dt>'
+						+		'<dd><select class="cardClass"><option value="身份证">身份证</option><option value="学生证">学生证</option><option value="出生证">出生证</option></select></dd>'
+						+		'<dt>证件号码:</dt>'
+						+		'<dd><input type="text" class="cardID"/></dd>'
+						+		'<dt>被保险人:</dt>'
+						+		'<dd><input type="text" class="benefitPerson"/></dd>'
+						+		'<dt>联系电话:</dt>'
+						+		'<dd><input type="text" class="phoneNum"/></dd>'
+						+		'<dt>联系地址:</dt>'
+						+		'<dd><input type="text" class="address"/></dd>'
+						+		'<dt>险种名称:</dt>'
+						+		'<dd><input type="text" class="securityClass"/></dd>'
+						+		'<dt>数量:</dt>'
+						+		'<dd><input type="text" class="totalArea input-nomarginright"/><span class="unit">亩</span></dd>'
+						+		'<dt>起保日期:</dt>'
+						+		'<dd><input type="text" id="startTime"/></dd>'
+						+		'<dt>终保日期:</dt>'
+						+		'<dd><input type="text" id="endTime"/></dd>'
+						+	'</dl>'
+						+'</div>'
+						+'<div class="form-btnwrap"><div class="div-btn cancel-btn" id="j-cancelcreate">取消</div><div class="div-btn okbtn" id="j-create">创建</div></div>'
+				  +'</div>';
+
+			return template;
+		},
+
+		//生成保险编号
+		createSecurityID: function (){
+			var getDate = new Date();
+			var day = getDate.toLocaleDateString().split('/');
+
+			var h = new Date().getHours(),
+				m = new Date().getMinutes(),
+				s = new Date().getSeconds();
+
+			var endTimeString = ''+(parseInt(h) < 10 ? '0'+h : h)+(parseInt(m) < 10 ? '0'+m : m)+(parseInt(s) < 10 ? '0'+s : s);
+
+			var d = day[0] + (parseInt(day[1]) < 10 ? '0'+day[1] : day[1]) + (parseInt(day[2]) < 10 ? '0'+day[2] : day[2]);
+
+			return d + this.cacheObj.employeeID + endTimeString;
+		},
+
+		//设置保险编号
+		setSecurityID: function (){
+			var secuid = this.createSecurityID();
+			$(this.cacheObj.secuID).val(secuid);
+		},
+
+		//关闭弹框
+		bindEvent: function (){
+			var self = this;
+
+			$(this.cacheObj.cancel_btn).click(function (){
+				self.cacheObj.maskObj.close();
+			});
+
+			$(this.cacheObj.confirm_btn).click(function (){
+				self.submitAddData();
+			});
+
+			$(this.cacheObj.startTime).Zebra_DatePicker();
+
+			$(this.cacheObj.endTime).Zebra_DatePicker();
+		},
+
+
+		//手动设置数据库中的字段和表单中的值的对应关系
+		setMappingVal: function (){
+			var self = this;
+			self.cacheObj.dbTableField = {
+				'coding': $(self.cacheObj.secuID).val(),
+				'policyholder': $(self.cacheObj.policyholder).val(),
+				'licenseclass': $(self.cacheObj.cardClass).val(),
+				'licensenum': $(self.cacheObj.cardID).val(),
+				'receiptor': $(self.cacheObj.benefitPerson).val(),
+				'phone': $(self.cacheObj.phoneNum).val(),
+				'address': $(self.cacheObj.address).val(),
+				'securename': $(self.cacheObj.securityClass).val(),
+				'area': $(self.cacheObj.totalArea).val(),
+				'start': $(self.cacheObj.startTime).val().replace(/-/g,''),
+				'end': $(self.cacheObj.endTime).val().replace(/-/g,'')
+			};
+		},
+
+		submitAddData: function (){
+			var self = this;
+
+			self.setMappingVal();
+
+			var mappingData = self.cacheObj.dbTableField;
+			var fields = [], data=[[]];
+			for(var key in mappingData){
+				fields.push(key);
+				data[0].push(mappingData[key]);
+			}
+
+			var sqlservice = new gEcnu.WebSQLServices.SQLServices({'processCompleted':function(tmp,fields){
+		      	alert('sucess!');
+		      	self.cacheObj.maskObj.close();
+		    },'processFailed':function (){alert('添加失败！');return false;}});
+		      
+		    var datas = {'Fields':fields, 'Data':data};
+		      
+		    sqlservice.processAscyn(gEcnu.ActType.ADD, self.cacheObj.dbName, self.cacheObj.tableName, datas);
+		},
+		//扩展api，用来验证表单提交数据的正确性
+		validateFormVal: function (){
+
+		}
+	};
+
+	var s = new createSecurity('00001', 'aaicgis', 'policy');
+	</script>
+</body>
+</html>

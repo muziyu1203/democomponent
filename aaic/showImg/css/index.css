@@ -1,0 +1,59 @@
+#container{
+	position:relative;
+	width:390px;
+	height:220px;
+	overflow: hidden;
+}
+.zhlunbolist{
+	position:absolute;
+	width:2730px;
+	height:220px;
+	top:0;
+}
+.zhlunbolist img{
+	float:left;
+	width:390px;
+	height:220px;
+}
+.numlist{
+	position:absolute;
+	height:10px;
+	width:75px;
+	z-index:2;
+	bottom:10px;
+	left:50%;
+	margin-left:-37px;
+}
+.numlist li{
+	width:10px;
+	height:10px;
+	margin-left: 5px;
+	border-radius: 5px;
+	background: #fff;
+	float:left;	
+}
+.numlist .selectedlist{
+	background:red; 
+}
+.circleimg{
+	position:absolute;
+	width:36px;
+	height:36px;
+	background: #3C3C3C;
+	cursor:pointer;
+	top:50%;
+	margin-top: -18px;
+	z-index: 2;
+	text-align: center;
+	line-height: 36px;
+	text-decoration: none;
+}
+.circleimg:hover{
+	opacity:0.5;
+}
+#imgprev{
+	left:10px;
+}
+#imgnext{
+	right:10px;
+}

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/iconfont.css">
+	<link rel="stylesheet" href="css/index.css">
+	<script src="../lib/jquery-1.9.1.min.js"></script>
+</head>
+<body>
+	<div class="showImg" id="showImg"></div>
+	<div id="container">
+		<div class="zhlunbolist" id="zhlunbo">
+			<img src="imgs/1.jpg" alt="1" class="item">
+			<img src="imgs/2.jpg" alt="2" class="item">
+			<img src="imgs/3.jpg" alt="3" class="item">
+			<img src="imgs/4.jpg" alt="4" class="item">
+			<img src="imgs/5.jpg" alt="5" class="item">
+		</div>
+		<ul class="numlist" id="btnlist">
+			<li class="selectedlist" data-index="1"></li>
+			<li data-index="2"></li>
+			<li data-index="3"></li>
+			<li data-index="4"></li>
+			<li data-index="5"></li>
+		</ul>
+		<a href="javascript:void(0)" class="circleimg" id="imgprev"><i class="iconfonts">&#xe627;</i></a>
+		<a href="javascript:void(0)" class="circleimg" id="imgnext"><i class="iconfonts">&#xe643;</i></a>
+	</div>
+
+<script type="text/javascript">
+;(function ($,window){
+
+	"use strict";
+	var default_op = {
+		speed:'normal',//自动播放的速度
+
+		bIfAutoRun: true,//是否自动轮播
+		bIfCircle: true,//是否循环播放
+		bIfListIcon: true//是否需要标识小按钮
+	};
+
+	function lunbo(option){
+
+		var op = $.extend({}, default_op, option);
+
+		this.cacheDom = {
+			outerWrap: $(op.sOuterWrap),
+			innerWrap: $(op.sInnerwrap),
+			iconWrap: $(op.IconWrap),
+
+			item: $(op.sInnerwrap + ' .item'),
+			icon: $(op.IconWrap + ' li'),
+
+			preBtn: $(op.prev),
+			nextBtn: $(op.next)
+		};
+
+		// this.areaWidth_px = op.sAreaWidth;
+		// this.areaHeight_px = op.sAreaHeight;
+		this.areaWidth_px = this.cacheDom.item.css('width');
+		this.areaHeight_px = this.cacheDom.item.css('height');
+
+		this.areaWidth = parseInt(this.areaWidth_px);
+		this.areaHeight = parseInt(this.areaHeight_px);
+
+		this.index = 1;
+		this.totalNum = op.totalNum;
+
+		this.circle = op.bIfCircle;
+		this.ifautoRun = op.bIfAutoRun;
+		this.ifListIcon = op.bIfListIcon;
+
+		this.interval = null;
+
+		this.init();
+	}
+
+	lunbo.prototype.init = function (){
+		if(this.circle){
+			this.cacheDom.innerWrap.append(this.cacheDom.item.first().clone(true));
+			this.cacheDom.innerWrap.prepend(this.cacheDom.item.last().clone(true));
+			this.cacheDom.innerWrap.css('width',this.areaWidth*(this.totalNum + 2)+'px');
+			this.cacheDom.innerWrap.css('left',-this.areaWidth+'px');
+		}
+		this.prevEvent();
+		this.nextEvent();
+		if(this.ifListIcon){
+			this.iconEvent();
+		}
+
+		if(this.ifautoRun){
+			this.autoRun();
+			this.hoverEvent();
+		}
+	};
+
+	lunbo.prototype.prevEvent = function (){
+		var self = this;
+		this.cacheDom.preBtn.click(function (){
+
+			if(self.index < 1) return;
+
+			if(self.index === 1){
+				if(self.circle){
+					self.index = self.totalNum;
+				}else{
+					return;
+				}
+			}else{
+				self.index--;
+			}
+
+			self.slideAnimate(self.areaWidth);
+		});
+	};
+
+	lunbo.prototype.nextEvent = function (){
+		var self = this;
+		this.cacheDom.nextBtn.click(function (){
+
+			if(self.index > self.totalNum) return;
+
+			if(self.index === self.totalNum){
+				if(self.circle){
+					self.index = 1;
+				}else{
+					return;
+				}
+			}else{
+				self.index++;
+			}
+			self.slideAnimate(-self.areaWidth);
+		});
+	};
+
+	lunbo.prototype.showIcon = function (){
+		var self = this;
+		self.cacheDom.icon.each(function (){
+			var index = parseInt($(this).data('index'));
+			if(index === self.index){
+				$(this).addClass('selectedlist');
+				$(this).siblings().removeClass('selectedlist');
+			}
+		});
+
+	};
+
+	lunbo.prototype.iconEvent = function (){
+		var self = this;
+		
+		this.cacheDom.icon.click(function (){
+			var oldindex = self.index;
+			self.index = parseInt($(this).data('index'));
+			self.showIcon();
+
+			var offset = (self.index - oldindex) * (-self.areaWidth);
+			self.slideAnimate(offset);
+		});
+	};
+
+	lunbo.prototype.autoRun = function (){
+		var self = this;
+		self.interval = setInterval(function (){
+			self.cacheDom.nextBtn.trigger('click');
+		}, 3000);
+	};
+
+	lunbo.prototype.autoRunStop = function (){
+		clearInterval(this.interval);
+	};
+
+	lunbo.prototype.hoverEvent = function (){
+		var self = this;
+		self.cacheDom.outerWrap.hover(function (){
+			self.autoRunStop();
+		},function (){
+			self.autoRun();
+		});
+	};
+
+	lunbo.prototype.slideAnimate = function (offset){
+		var self = this;
+		var left = parseInt(this.cacheDom.innerWrap.css('left'));
+		var lastLeft = -self.areaWidth * self.totalNum;
+
+		if(self.ifListIcon){
+			self.showIcon();
+		}
+
+		self.cacheDom.innerWrap.animate(
+			{left: left + offset + 'px'}, 
+			self.speed,
+			function (){
+				if(self.circle){
+					if(parseInt(self.cacheDom.innerWrap.css('left')) > -self.areaWidth){
+					self.cacheDom.innerWrap.css('left', lastLeft + 'px');
+					}else if(parseInt(self.cacheDom.innerWrap.css('left')) < lastLeft){
+
+						self.cacheDom.innerWrap.css('left', -self.areaWidth + 'px');
+					}
+				}
+			}
+		);
+	};
+
+	window.LunBo = lunbo;
+
+})(jQuery, window);
+
+var default_op = {
+		sOuterWrap: '#container',//最外层div，必须定义
+		sInnerwrap: '.zhlunbolist',//内层包含图片的div，必须定义
+
+		IconWrap: '.numlist',//指示按钮外层，如果没有则为空，必须定义
+
+		prev: '#imgprev',//，必须定义
+		next: '#imgnext',//，必须定义
+
+		totalNum: 5,//轮播的总的张数
+
+		speed:'normal',//自动播放的速度
+
+		bIfAutoRun: true,//是否自动轮播
+		bIfCircle: true,//是否循环播放
+		bIfListIcon: false//是否需要标识小按钮
+
+
+	};
+	var lunbo = new LunBo(default_op);
+	</script>
+</body>
+</html>
